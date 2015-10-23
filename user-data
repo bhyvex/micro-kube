@@ -1,0 +1,374 @@
+#cloud-config
+
+coreos:
+
+  update:
+    reboot-strategy: off
+
+  etcd2:
+    name: micro-kube
+    initial-advertise-peer-urls: http://127.0.0.1:2380
+    initial-cluster-token: micro-kube-etcd
+    initial-cluster: micro-kube=http://127.0.0.1:2380
+    initial-cluster-state: new
+    listen-peer-urls: http://0.0.0.0:2380
+    listen-client-urls: http://0.0.0.0:2379
+    advertise-client-urls:  http://0.0.0.0:2379
+
+  flannel:
+    interface: $public_ipv4
+
+  units:
+
+    - name: etcd2.service
+      command: start
+
+    - name: flanneld.service
+      drop-ins:
+      - name: 50-network-config.conf
+        content: |
+          [Service]
+          ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{ "Network": "10.1.0.0/16" }'
+      command: start
+
+    - name: docker-tcp.socket
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Docker Socket for the API
+
+        [Socket]
+        ListenStream=2375
+        Service=docker.service
+        BindIPv6Only=both
+
+        [Install]
+        WantedBy=sockets.target
+
+    - name: kube-apiserver.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes API Server
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kube-apiserver"
+        ExecStart=/opt/bin/kube-apiserver \
+          --allow_privileged=true \
+          --insecure_bind_address=0.0.0.0 \
+          --insecure_port=8080 \
+          --kubelet_https=true \
+          --secure_port=6443 \
+          --service-cluster-ip-range=10.100.0.0/16 \
+          --etcd_servers=http://127.0.0.1:2379 \
+          --public_address_override=127.0.0.1 \
+          --logtostderr=true \
+          --runtime_config=api/v1
+
+        Restart=always
+        RestartSec=10
+
+    - name: kube-controller-manager.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes Controller Manager
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kube-controller-manager"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/opt/bin/kube-controller-manager \
+          --master=127.0.0.1:8080 \
+          --logtostderr=true
+
+        Restart=always
+        RestartSec=10
+
+    - name: kube-kubelet.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes Kubelet
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubelet"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/opt/bin/kubelet \
+          --address=0.0.0.0 \
+          --port=10250 \
+          --hostname_override=${COREOS_PRIVATE_IPV4} \
+          --register-node=true \
+          --container_runtime=docker \
+          --api_servers=http://127.0.0.1:8080 \
+          --allow_privileged=true \
+          --cluster_dns=10.100.0.10 \
+          --cluster_domain=cluster.local \
+          --logtostderr=true \
+          --cadvisor_port=4194 \
+          --healthz_bind_address=0.0.0.0 \
+          --healthz_port=10248
+
+        Restart=always
+        RestartSec=10
+
+    - name: kube-proxy.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes Proxy
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kube-proxy"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/opt/bin/kube-proxy \
+          --master=http://127.0.0.1:8080 \
+          --logtostderr=true
+
+        Restart=always
+        RestartSec=10
+
+    - name: kube-scheduler.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes Scheduler
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kube-scheduler"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/opt/bin/kube-scheduler \
+          --master=127.0.0.1:8080 \
+          --logtostderr=true
+
+        Restart=always
+        RestartSec=10
+
+    - name: kube-ui.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes UI Addon
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubectl"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/bin/bash -c "/opt/bin/kubectl describe rc kube-ui --namespace=kube-system >/dev/null 2>&1 || \
+          /opt/bin/kubectl create -f /var/lib/micro-kube/kube-ui-rc.yaml && \
+          /opt/bin/kubectl create -f /var/lib/micro-kube/kube-ui-svc.yaml"
+
+    - name: kube-dns.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Kubernetes DNS Addon
+        Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubectl"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/bin/bash -c "/opt/bin/kubectl describe rc kube-dns --namespace=kube-system >/dev/null 2>&1 || \
+          /opt/bin/kubectl create -f /var/lib/micro-kube/kube-dns-rc.yaml && \
+          /opt/bin/kubectl create -f /var/lib/micro-kube/kube-dns-svc.yaml"
+
+write_files:
+
+  - path: /opt/bin/download-k8s-binary
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      export K8S_VERSION="v1.0.6"
+      FILE=$1
+      if [ ! -f /opt/bin/$FILE ]; then
+        curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
+        chmod +x /opt/bin/$FILE
+      else
+        # we check the version of the binary
+        INSTALLED_VERSION=$(/opt/bin/$FILE --version)
+        MATCH=$(echo "${INSTALLED_VERSION}" | grep -c "${K8S_VERSION}")
+        if [ $MATCH -eq 0 ]; then
+          # the version is different
+          curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
+          chmod +x /opt/bin/$FILE
+        fi
+      fi
+
+  - path: /opt/bin/wupiao
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      # [w]ait [u]ntil [p]ort [i]s [a]ctually [o]pen
+      [ -n "$1" ] && \
+        until curl -o /dev/null -sIf http://${1}; do \
+          sleep 1 && echo .;
+        done;
+      exit $?
+
+  - path: /var/lib/micro-kube/kube-ui-rc.yaml
+    permission: '0644'
+    content: |
+      apiVersion: v1
+      kind: ReplicationController
+      metadata:
+        name: kube-ui
+        namespace: kube-system
+        labels:
+          k8s-app: kube-ui
+          version: v1
+          kubernetes.io/cluster-service: "true"
+      spec:
+        replicas: 1
+        selector:
+          k8s-app: kube-ui
+          version: v1
+        template:
+          metadata:
+            labels:
+              k8s-app: kube-ui
+              version: v1
+              kubernetes.io/cluster-service: "true"
+          spec:
+            containers:
+            - name: kube-ui
+              image: gcr.io/google_containers/kube-ui:v1
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 50Mi
+              ports:
+              - containerPort: 8080
+
+  - path: /var/lib/micro-kube/kube-ui-svc.yaml
+    permission: '0644'
+    content: |
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kube-ui
+        namespace: kube-system
+        labels:
+          k8s-app: kube-ui
+          kubernetes.io/cluster-service: "true"
+          kubernetes.io/name: "KubeUI"
+      spec:
+        selector:
+          k8s-app: kube-ui
+        ports:
+        - port: 80
+          targetPort: 8080
+
+  - path: /var/lib/micro-kube/kube-dns-rc.yaml
+    permission: '0644'
+    content: |
+      apiVersion: v1
+      kind: ReplicationController
+      metadata:
+        name: kube-dns
+        namespace: kube-system
+        labels:
+          k8s-app: kube-dns
+          version: v8
+          kubernetes.io/cluster-service: "true"
+      spec:
+        replicas: 1
+        selector:
+          k8s-app: kube-dns
+          version: v8
+        template:
+          metadata:
+            labels:
+              k8s-app: kube-dns
+              version: v8
+              kubernetes.io/cluster-service: "true"
+          spec:
+            containers:
+            - name: etcd
+              image: gcr.io/google_containers/etcd:2.0.9
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 50Mi
+              command:
+              - /usr/local/bin/etcd
+              - -listen-client-urls
+              - http://127.0.0.1:2379,http://127.0.0.1:4001
+              - -advertise-client-urls
+              - http://127.0.0.1:2379,http://127.0.0.1:4001
+              - -initial-cluster-token
+              - skydns-etcd
+            - name: kube2sky
+              image: gcr.io/google_containers/kube2sky:1.11
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 50Mi
+              args:
+              # command = "/kube2sky"
+              - -kube_master_url=http://172.19.17.99:8080
+              - -domain=cluster.local
+            - name: skydns
+              image: gcr.io/google_containers/skydns:2015-03-11-001
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 50Mi
+              args:
+              # command = "/skydns"
+              - -machines=http://localhost:2379
+              - -addr=0.0.0.0:53
+              - -domain=cluster.local
+              - -nameservers=8.8.8.8:53,8.8.4.4:53
+              ports:
+              - containerPort: 53
+                name: dns
+                protocol: UDP
+              - containerPort: 53
+                name: dns-tcp
+                protocol: TCP
+            dnsPolicy: Default  # Don't use cluster DNS.
+
+  - path: /var/lib/micro-kube/kube-dns-svc.yaml
+    permission: '0644'
+    content: |
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kube-dns
+        namespace: kube-system
+        labels:
+          k8s-app: kube-dns
+          name: kube-dns
+          kubernetes.io/cluster-service: "true"
+      spec:
+        selector:
+          k8s-app: kube-dns
+        clusterIP: 10.100.0.10
+        ports:
+        - name: dns
+          port: 53
+          protocol: UDP
+        - name: dns-tcp
+          port: 53
+          protocol: TCP
