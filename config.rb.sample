@@ -14,9 +14,3 @@
 # $vm_memory = 1024
 # $vm_cpus = 1
 # $ip = '172.17.8.100'
-
-# Enable port forwarding from guest to host machine.
-# Syntax is: { 80 => 8080 }
-# Auto correction is enabled by default.
-
-# $forwarded_ports = { 8080 => 8080}
