@@ -104,7 +104,7 @@ $ sudo systemctl status kubelet
 To view logs:
 
 ```
-$ sudo journalctl -f kubelet
+$ sudo journalctl -fu kubelet
 ```
 
 ### Troubleshooting other components
