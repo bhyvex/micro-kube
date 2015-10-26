@@ -6,6 +6,8 @@ require 'fileutils'
 Vagrant.require_version ">= 1.6.0"
 
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "user-data")
+SSL_TARBALL_PATH = File.expand_path("ssl/controller.tar")
+
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
 # Defaults for config options defined in CONFIG
@@ -14,10 +16,13 @@ $image_version = "current"
 $vm_memory = 1024
 $vm_cpus = 1
 $ip = '172.17.8.100'
-$forwarded_ports = { 8080 => 8080 }
 
 if File.exist?(CONFIG)
   require CONFIG
+end
+
+if !File.exist?(SSL_TARBALL_PATH) then
+  system("mkdir -p ssl && ./init-ssl ssl IP.1=10.3.0.1,IP.2=#{$ip}") or abort ("failed generating SSL artifacts")
 end
 
 Vagrant.configure("2") do |config|
@@ -52,10 +57,6 @@ Vagrant.configure("2") do |config|
   config.vm.define vm_name = "micro-kube" do |config|
     config.vm.hostname = vm_name
 
-    $forwarded_ports.each do |guest, host|
-      config.vm.network "forwarded_port", guest: guest, host: host, auto_correct: true
-    end
-
     ["vmware_fusion", "vmware_workstation"].each do |vmware|
       config.vm.provider vmware do |v|
         v.vmx['memsize'] = $vm_memory
@@ -69,6 +70,9 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.network :private_network, ip: $ip
+
+    config.vm.provision :file, :source => SSL_TARBALL_PATH, :destination => "/tmp/ssl.tar"
+    config.vm.provision :shell, :inline => "mkdir -p /etc/micro-kube/ssl && tar -C /etc/micro-kube/ssl -xf /tmp/ssl.tar", :privileged => true
 
     config.vm.provision :file, :source => "#{CLOUD_CONFIG_PATH}", :destination => "/tmp/vagrantfile-user-data"
     config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
