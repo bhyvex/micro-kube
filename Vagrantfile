@@ -10,19 +10,22 @@ SSL_TARBALL_PATH = File.expand_path("ssl/controller.tar")
 
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
+# WARNING: micro-kube's services and DNS expect that your node runs at the IP
+# below.  Change this at your own risk.  Things WILL break.
+IP = '172.17.8.100'
+
 # Defaults for config options defined in CONFIG
 $update_channel = "stable"
 $image_version = "current"
 $vm_memory = 1024
 $vm_cpus = 1
-$ip = '172.17.8.100'
 
 if File.exist?(CONFIG)
   require CONFIG
 end
 
 if !File.exist?(SSL_TARBALL_PATH) then
-  system("mkdir -p ssl && ./init-ssl ssl IP.1=10.3.0.1,IP.2=#{$ip}") or abort ("failed generating SSL artifacts")
+  system("mkdir -p ssl && ./init-ssl ssl IP.1=10.3.0.1,IP.2=#{IP}") or abort ("failed generating SSL artifacts")
 end
 
 Vagrant.configure("2") do |config|
@@ -69,7 +72,7 @@ Vagrant.configure("2") do |config|
       vb.cpus = $vm_cpus
     end
 
-    config.vm.network :private_network, ip: $ip
+    config.vm.network :private_network, ip: IP
 
     config.vm.provision :file, :source => SSL_TARBALL_PATH, :destination => "/tmp/ssl.tar"
     config.vm.provision :shell, :inline => "mkdir -p /etc/micro-kube/ssl && tar -C /etc/micro-kube/ssl -xf /tmp/ssl.tar", :privileged => true

@@ -285,6 +285,23 @@ write_files:
             initialDelaySeconds: 15
             timeoutSeconds: 1
 
+  - path: /etc/micro-kube/system/micro-kube-router.yaml
+    permission: '0644'
+    content: |
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: micro-kube-router
+        namespace: kube-system
+      spec:
+        containers:
+        - name: micro-kube-router
+          image: krancour/micro-kube-router:latest
+          ports:
+          - containerPort: 80
+            hostPort: 80
+            name: http
+
   - path: /etc/micro-kube/addons/kube-ui-rc.yaml
     permission: '0644'
     content: |
