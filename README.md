@@ -23,7 +23,7 @@ $ vagrant up
 Allow a couple minutes after starting for all services to become fully function.  Wait time may
 vary with the speed of your internet connection.
 
-The Kubernetes API will be available at http://172.17.8.100:8080 and https://172.17.8.100:5443
+The Kubernetes API will be available at http://172.17.8.100:8080 and https://172.17.8.100:6443
 
 The Kubernetes UI (a dashboard application) will be available at
 http://kube-ui.kube-system.micro-kube.io
