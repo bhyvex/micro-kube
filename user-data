@@ -95,8 +95,7 @@ coreos:
         ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubectl"
         ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
         ExecStart=/bin/bash -c "/opt/bin/kubectl describe rc kube-ui --namespace=kube-system >/dev/null 2>&1 || \
-          /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-ui-rc.yaml && \
-          /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-ui-svc.yaml"
+          /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-ui.yaml"
 
     - name: kube-dns.service
       command: start
@@ -112,8 +111,7 @@ coreos:
         ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubectl"
         ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
         ExecStart=/bin/bash -c "/opt/bin/kubectl describe rc kube-dns --namespace=kube-system >/dev/null 2>&1 || \
-          /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-dns-rc.yaml && \
-          /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-dns-svc.yaml"
+          /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-dns.yaml"
 
 write_files:
 
@@ -309,7 +307,7 @@ write_files:
             hostPort: 80
             name: http
 
-  - path: /etc/micro-kube/addons/kube-ui-rc.yaml
+  - path: /etc/micro-kube/addons/kube-ui.yaml
     permission: '0644'
     content: |
       apiVersion: v1
@@ -342,10 +340,7 @@ write_files:
                   memory: 50Mi
               ports:
               - containerPort: 8080
-
-  - path: /etc/micro-kube/addons/kube-ui-svc.yaml
-    permission: '0644'
-    content: |
+      ---
       apiVersion: v1
       kind: Service
       metadata:
@@ -362,7 +357,7 @@ write_files:
         - port: 80
           targetPort: 8080
 
-  - path: /etc/micro-kube/addons/kube-dns-rc.yaml
+  - path: /etc/micro-kube/addons/kube-dns.yaml
     permission: '0644'
     content: |
       apiVersion: v1
@@ -431,10 +426,7 @@ write_files:
                 name: dns-tcp
                 protocol: TCP
             dnsPolicy: Default  # Don't use cluster DNS.
-
-  - path: /etc/micro-kube/addons/kube-dns-svc.yaml
-    permission: '0644'
-    content: |
+      ---
       apiVersion: v1
       kind: Service
       metadata:
