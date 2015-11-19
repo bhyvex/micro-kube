@@ -11,5 +11,5 @@
 
 # Customize VMs:
 
-# $vm_memory = 1024
+# $vm_memory = 2048
 # $vm_cpus = 1

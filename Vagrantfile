@@ -17,7 +17,7 @@ IP = '172.17.8.100'
 # Defaults for config options defined in CONFIG
 $update_channel = "stable"
 $image_version = "current"
-$vm_memory = 1024
+$vm_memory = 2048
 $vm_cpus = 1
 
 if File.exist?(CONFIG)
