@@ -113,6 +113,21 @@ coreos:
         ExecStart=/bin/bash -c "/opt/bin/kubectl describe rc kube-dns --namespace=kube-system >/dev/null 2>&1 || \
           /opt/bin/kubectl create -f /etc/micro-kube/addons/kube-dns.yaml"
 
+    - name: micro-kube-router.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=micro-kube Router Addon
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/etc/environment
+        ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubectl"
+        ExecStartPre=/opt/bin/wupiao 127.0.0.1:8080
+        ExecStart=/bin/bash -c "/opt/bin/kubectl describe rc micro-kube-router --namespace=kube-system >/dev/null 2>&1 || \
+          /opt/bin/kubectl create -f /etc/micro-kube/addons/micro-kube-router.yaml"
+
 write_files:
 
   - path: /opt/bin/download-k8s-binary
@@ -290,22 +305,32 @@ write_files:
             initialDelaySeconds: 15
             timeoutSeconds: 1
 
-  - path: /etc/micro-kube/system/micro-kube-router.yaml
+  - path: /etc/micro-kube/addons/micro-kube-router.yaml
     permission: '0644'
     content: |
       apiVersion: v1
-      kind: Pod
+      kind: ReplicationController
       metadata:
         name: micro-kube-router
         namespace: kube-system
+        labels:
+          k8s-app: micro-kube-router
       spec:
-        containers:
-        - name: micro-kube-router
-          image: krancour/micro-kube-router:latest
-          ports:
-          - containerPort: 80
-            hostPort: 80
-            name: http
+        replicas: 1
+        selector:
+          k8s-app: micro-kube-router
+        template:
+          metadata:
+            labels:
+              k8s-app: micro-kube-router
+          spec:
+            containers:
+            - name: micro-kube-router
+              image: krancour/micro-kube-router:latest
+              ports:
+              - containerPort: 80
+                hostPort: 80
+                name: http
 
   - path: /etc/micro-kube/addons/kube-ui.yaml
     permission: '0644'
