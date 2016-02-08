@@ -134,7 +134,7 @@ write_files:
     permissions: '0755'
     content: |
       #!/usr/bin/env bash
-      export K8S_VERSION="v1.1.2"
+      export K8S_VERSION="v1.1.7"
       FILE=$1
       if [ ! -f /opt/bin/$FILE ]; then
         curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
