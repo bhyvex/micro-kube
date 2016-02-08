@@ -389,18 +389,15 @@ write_files:
         namespace: kube-system
         labels:
           k8s-app: kube-dns
-          version: v8
           kubernetes.io/cluster-service: "true"
       spec:
         replicas: 1
         selector:
           k8s-app: kube-dns
-          version: v8
         template:
           metadata:
             labels:
               k8s-app: kube-dns
-              version: v8
               kubernetes.io/cluster-service: "true"
           spec:
             containers:
