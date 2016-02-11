@@ -4,6 +4,10 @@
 
 * Enable the beta daemonsets API extension
 
+### Maintenance
+
+* Rename `_scripts/` directory to `scripts/`
+
 ## v0.2.3 -> v0.2.4
 
 ### Fixes
