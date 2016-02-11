@@ -7,6 +7,7 @@
 ### Maintenance
 
 * Rename `_scripts/` directory to `scripts/`
+* Separate micro-kube-router into its own repository
 
 ## v0.2.3 -> v0.2.4
 
