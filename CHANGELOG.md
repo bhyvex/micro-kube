@@ -8,6 +8,7 @@
 
 * Rename `_scripts/` directory to `scripts/`
 * Separate micro-kube-router into its own repository
+* Use micro-kube-router:v0.1.0
 
 ## v0.2.3 -> v0.2.4
 

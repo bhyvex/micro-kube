@@ -327,7 +327,7 @@ write_files:
           spec:
             containers:
             - name: micro-kube-router
-              image: krancour/micro-kube-router:latest
+              image: krancour/micro-kube-router:v0.1.0
               ports:
               - containerPort: 80
                 hostPort: 80
