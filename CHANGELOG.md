@@ -1,3 +1,9 @@
+## v0.2.3 -> v0.3.0
+
+### Features
+
+* Enable the beta daemonsets API extension
+
 ## v0.2.3 -> v0.2.4
 
 ### Fixes
