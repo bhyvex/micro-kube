@@ -1,0 +1,6 @@
+package: github.com/krancour/micro-kube
+flatten: true
+import:
+- package: k8s.io/kubernetes
+  version: ~1.1
+  subpackage: pkg

@@ -1,28 +1,33 @@
-SERVER := 172.17.8.100:8080
+export GO15VENDOREXPERIMENT=1
+export MK_IP=172.17.8.100
+export MK_PORT=8080
+
+REPO_PATH := github.com/krancour/micro-kube
 
 check-vagrant:
 	@if [ -z $$(which vagrant) ]; then \
-		echo "Missing \`vagrant\`, which is required for development"; \
+		echo "Missing \`vagrant\`, which is required for testing"; \
 		exit 1; \
 	fi
 
-check-kubectl:
-	@if [ -z $$(which kubectl) ]; then \
-		echo "Missing \`kubectl\`, which is required for development"; \
+check-go:
+	@if [ -z $$(which go) ]; then \
+		echo "Missing \`go\`, which is required for testing"; \
 		exit 1; \
 	fi
 
-up: check-vagrant
+check-glide:
+	@if [ -z $$(which glide) ]; then \
+		echo "Missing \`glide\`, which is required for testing"; \
+		exit 1; \
+	fi
+
+test-all: check-glide check-vagrant
+	glide install
 	vagrant up
-
-destroy: check-vagrant
+	scripts/wupiao.sh ${MK_IP}:${MK_PORT} 300 || (vagrant destroy -f && exit 1)
+	$(MAKE) test || (vagrant destroy -f && exit 1)
 	vagrant destroy -f
 
-config-kubectl: check-kubectl
-	kubectl config set-cluster micro-kube-insecure --server=http://${SERVER}
-	kubectl config set-context micro-kube-insecure --cluster=micro-kube-insecure
-	kubectl config use-context micro-kube-insecure
-
-test: check-vagrant check-kubectl up config-kubectl
-	@scripts/wupiao.sh ${SERVER} 300 || ($(MAKE) destroy && exit 1)
-	@$(MAKE) destroy
+test: check-go
+	go test --cover --race -v ${REPO_PATH}
