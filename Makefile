@@ -24,5 +24,5 @@ config-kubectl: check-kubectl
 	kubectl config use-context micro-kube-insecure
 
 test: check-vagrant check-kubectl up config-kubectl
-	@./_scripts/wupiao.sh ${SERVER} 300 || ($(MAKE) destroy && exit 1)
+	@scripts/wupiao.sh ${SERVER} 300 || ($(MAKE) destroy && exit 1)
 	@$(MAKE) destroy
