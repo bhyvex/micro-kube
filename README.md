@@ -156,9 +156,6 @@ $ kubectl logs <pod name> --namespace=kube-system
 * Although micro-kube exposes both secure and insecure API endpoints, the kube-ui addon is
   accessible _only_ an insecure port.
 
-* micro-kube does not work on Windows.  There are not presently any plans to address this, but
-  community contributions aimed at remediating this are welcome.
-
 ## Contributing
 
 Pull requests that make micro-kube more awesome are welcome!  The primary guideline for

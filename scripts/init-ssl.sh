@@ -6,7 +6,7 @@ OPENSSL=/usr/bin/openssl
 
 function usage {
     echo "USAGE: $0 <output-dir> [SAN,SAN,SAN]"
-    echo "  example: $0 ./ssl IP.1=127.0.0.1,IP.2=10.0.0.1"
+    echo "  example: $0 ./ssl IP.1=10.3.0.1,IP.2=172.17.8.100"
 }
 
 if [ -z "$1" ]; then
@@ -22,7 +22,7 @@ fi
 OUTDIR=$1
 SANS=$2
 
-OUTFILE_CONTROLLER="$OUTDIR/controller.tar"
+OUTFILE="$OUTDIR/ssl.tar"
 
 CNF_TEMPLATE="
 [req]
@@ -53,13 +53,13 @@ $OPENSSL req -x509 -new -nodes -key $OUTDIR/ca-key.pem -days 10000 -out $OUTDIR/
 # create apiserver key and signed cert
 $OPENSSL genrsa -out $OUTDIR/apiserver-key.pem 2048
 $OPENSSL req -new -key $OUTDIR/apiserver-key.pem -out $OUTDIR/apiserver.csr -subj "/CN=kube-apiserver" -config $OUTDIR/apiserver-req.cnf
-$OPENSSL x509 -req -in $OUTDIR/apiserver.csr -CA $OUTDIR/ca.pem -CAkey $OUTDIR/ca-key.pem -CAcreateserial -out $OUTDIR/apiserver.pem -days 365 -extensions v3_req -extfile $OUTDIR/apiserver-req.cnf
+$OPENSSL x509 -req -in $OUTDIR/apiserver.csr -CA $OUTDIR/ca.pem -CAkey $OUTDIR/ca-key.pem -CAcreateserial -out $OUTDIR/apiserver.pem -days 10000 -extensions v3_req -extfile $OUTDIR/apiserver-req.cnf
 
 # create admin key and signed cert
 $OPENSSL genrsa -out $OUTDIR/admin-key.pem 2048
 $OPENSSL req -new -key $OUTDIR/admin-key.pem -out $OUTDIR/admin.csr -subj "/CN=kube-admin"
-$OPENSSL x509 -req -in $OUTDIR/admin.csr -CA $OUTDIR/ca.pem -CAkey $OUTDIR/ca-key.pem -CAcreateserial -out $OUTDIR/admin.pem -days 365
+$OPENSSL x509 -req -in $OUTDIR/admin.csr -CA $OUTDIR/ca.pem -CAkey $OUTDIR/ca-key.pem -CAcreateserial -out $OUTDIR/admin.pem -days 10000
 
-tar -cf $OUTFILE_CONTROLLER -C $OUTDIR/ ca.pem apiserver.pem apiserver-key.pem
+tar -cf $OUTFILE -C $OUTDIR/ ca.pem apiserver.pem apiserver-key.pem
 
-echo "Bundled controller SSL artifacts into $OUTFILE_CONTROLLER"
+echo "Bundled SSL artifacts into $OUTFILE"
