@@ -1,3 +1,13 @@
+## v0.3.0 -> v0.4.0
+
+### Features
+
+* Hypothetical support for Windows (untested)
+
+### Maintenance
+
+* Transition to static SSL configuration
+
 ## v0.2.3 -> v0.3.0
 
 ### Features
