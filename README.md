@@ -1,3 +1,15 @@
+# !!! micro-kube is moving !!!
+
+Please note that this repository and documentation is for "classic" micro-kube.
+
+Classic micro-kube is a fast way to get up and running with a single-node Kubernetes cluster, _but_ it requires you to first clone this source code.  This implicitly makes git a dependency.  Additionally, classic micro-kube relies on vagrant (in addition to a virtualization provider like VirtualBox).  These dependencies are no longer desirable, so micro-kube is evolving...
+
+Active development of the next version of micro-kube is _moving_ to the following repositories:
+
+* [micro-kube/images](https://github.com/micro-kube/images)-- Packer-based builds of images for a variety of virtualization providers.  Such images include pre-pulled Docker images for all Kubernetes and micro-kube components so that micro-kube VMs start as fast as possible _and_ can be started offline.
+
+* [micro-kube/cli](https://github.com/micro-kube/cli)-- A handy and _simple_ command line interface for downloading micro-kube VM images and launching them using the virtualization provider of your choice.
+
 # micro-kube
 
 **micro-kube** is the fastest way to start a fully-functional, single-node
