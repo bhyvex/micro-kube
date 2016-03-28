@@ -134,7 +134,7 @@ write_files:
     permissions: '0755'
     content: |
       #!/usr/bin/env bash
-      export K8S_VERSION="v1.1.7"
+      export K8S_VERSION="v1.2.0"
       FILE=$1
       if [ ! -f /opt/bin/$FILE ]; then
         curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
@@ -173,7 +173,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-apiserver
-          image: gcr.io/google_containers/hyperkube:v1.1.7
+          image: gcr.io/google_containers/hyperkube:v1.2.0
           command:
           - /hyperkube
           - apiserver
@@ -224,7 +224,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-controller-manager
-          image: gcr.io/google_containers/hyperkube:v1.1.7
+          image: gcr.io/google_containers/hyperkube:v1.2.0
           command:
           - /hyperkube
           - controller-manager
@@ -265,7 +265,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-proxy
-          image: gcr.io/google_containers/hyperkube:v1.1.7
+          image: gcr.io/google_containers/hyperkube:v1.2.0
           command:
           - /hyperkube
           - proxy
@@ -293,7 +293,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-scheduler
-          image: gcr.io/google_containers/hyperkube:v1.1.7
+          image: gcr.io/google_containers/hyperkube:v1.2.0
           command:
           - /hyperkube
           - scheduler
