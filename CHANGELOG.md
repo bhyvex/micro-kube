@@ -6,6 +6,7 @@
 
 ### Maintenance
 
+* Upgrade Kubernetes to v1.2.0
 * Transition to static SSL configuration
 
 ## v0.2.3 -> v0.3.0
