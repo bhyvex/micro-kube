@@ -1,7 +1,7 @@
-.vagrant/
-config.rb
-*.pem
-*.csr
-*.cnf
-*.srl
-vendor/
+/.vagrant/
+/config.rb
+/ssl/*.pem
+/ssl/*.csr
+/ssl/*.cnf
+/ssl/*.srl
+/tests/vendor/

@@ -1,0 +1,8 @@
+package: github.com/microkube/micro-kube/tests
+flatten: true
+import:
+- package: k8s.io/kubernetes
+  version: 1.2.0
+  subpackage: pkg
+- package: github.com/docker/docker
+  version: 2b27fe17a1b3fb8472fde96d768fa70996adf201

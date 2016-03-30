@@ -1,4 +1,4 @@
-package microkube
+package tests
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"k8s.io/kubernetes/pkg/client/restclient"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 )
 
@@ -79,9 +80,10 @@ func testService(svcName string, t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	ip = os.Getenv("MK_IP")
-	port := os.Getenv("MK_PORT")
-	config := &client.Config{Host: fmt.Sprintf("%s:%s", ip, port)}
+	ip = os.Getenv("SYSTEM_POD_IP")
+	test_ip := os.Getenv("TEST_IP")
+	test_port := os.Getenv("TEST_PORT")
+	config := &restclient.Config{Host: fmt.Sprintf("%s:%s", test_ip, test_port)}
 	kubeClient, err := client.New(config)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v.", err)

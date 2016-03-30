@@ -3,7 +3,7 @@
 
 require 'fileutils'
 
-Vagrant.require_version ">= 1.6.0"
+Vagrant.require_version ">= 1.6.1"
 
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "user-data")
 SSL_TARBALL_PATH = File.expand_path("ssl/ssl.tar")
@@ -12,7 +12,8 @@ CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
 # WARNING: micro-kube's services and DNS expect that your node runs at the IP
 # below.  Change this at your own risk.  Things WILL break.
-IP = '172.17.8.100'
+PRIMARY_IP = '172.17.8.100'
+TEST_IP = '192.168.99.254'
 
 # Defaults for config options defined in CONFIG
 $update_channel = "stable"
@@ -68,7 +69,8 @@ Vagrant.configure("2") do |config|
       vb.cpus = $vm_cpus
     end
 
-    config.vm.network :private_network, ip: IP
+    config.vm.network :private_network, ip: TEST_IP
+    config.vm.network :private_network, ip: PRIMARY_IP
 
     config.vm.provision :file, :source => SSL_TARBALL_PATH, :destination => "/tmp/ssl.tar"
     config.vm.provision :shell, :inline => "mkdir -p /etc/micro-kube/ssl && tar -C /etc/micro-kube/ssl -xf /tmp/ssl.tar", :privileged => true
