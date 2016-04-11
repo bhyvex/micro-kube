@@ -1,3 +1,8 @@
+## v0.4.0 -> v0.4.1
+
+* Upgrade Kubernetes to v1.2.2
+* Upgrade micro-kube-router to v0.2.0
+
 ## v0.3.0 -> v0.4.0
 
 ### Features
