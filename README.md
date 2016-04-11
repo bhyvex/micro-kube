@@ -27,7 +27,7 @@ Vagrant already installed and functioning properly.
 Just clone this repository and `vagrant up`!
 
 ```
-$ git clone git@github.com:krancour/micro-kube.git
+$ git clone git@github.com:micro-kube/micro-kube.git
 $ cd micro-kube
 $ vagrant up
 ```
