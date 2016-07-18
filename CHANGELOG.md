@@ -1,3 +1,9 @@
+## v0.4.2 -> v0.4.3
+
+### Maintenance
+
+* Upgrade Kubernetes to v1.2.6
+
 ## v0.4.1 -> v0.4.2
 
 ### Maintenance
