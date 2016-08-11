@@ -1,23 +1,41 @@
-# !!! micro-kube is moving !!!
+# !!! micro-kube and classic micro-kube are deprecated !!!
 
-Please note that this repository and documentation is for "classic" micro-kube.
+## TL;DR
 
-Classic micro-kube is a fast way to get up and running with a single-node Kubernetes cluster, _but_ it requires you to first clone this source code.  This implicitly makes git a dependency.  Additionally, classic micro-kube relies on vagrant (in addition to a virtualization provider like VirtualBox).  These dependencies are no longer desirable, so micro-kube is evolving...
+All variants of micro-kube are deprecated in favor of [minikube](https://github.com/kubernetes/minikube) and [kmachine](https://github.com/skippbox/kmachine)-- both of which are better, more mature options for quickly creating single-node Kubernetes clusters to facilitate education, experimentation, and development.
 
-Active development of the next version of micro-kube is _moving_ to the following repositories:
+## The whole story
+
+Classic micro-kube is a fast way to get up and running with a single-node Kubernetes cluster, _but_ it requires you to first clone this source code.  This implicitly makes git a dependency.  Additionally, classic micro-kube relies on vagrant (in addition to a virtualization provider like VirtualBox).  For ease of use, these dependencies are no longer desirable, so micro-kube began to evolve...
+
+Development of the next major version of micro-kube _moved_ to the following repositories:
 
 * [micro-kube/images](https://github.com/micro-kube/images)-- Packer-based builds of images for a variety of virtualization providers.  Such images include pre-pulled Docker images for all Kubernetes and micro-kube components so that micro-kube VMs start as fast as possible _and_ can be started offline.
 
 * [micro-kube/cli](https://github.com/micro-kube/cli)-- A handy and _simple_ command line interface for downloading micro-kube VM images and launching them using the virtualization provider of your choice.
 
+_However..._
+
+As work on the CLI progressed, the tool that was emerging began to feel very familiar-- it simply felt like a Kubernetes-aware, albeit generally less capable rip-off of [docker-machine](https://github.com/docker/machine). Briefly, it was considered that forking and enhancing docker-machine might prove to be a better approach than continuing to cultivate a new CLI from scratch. As it turned out, someone else was already doing that-- [kmachine](https://github.com/skippbox/kmachine).
+
+As it would happen, the developers of kmachine aren't certain of kmachine's future, given the development of a well-polished, _official_ option from Kubernetes for creating local, single-node Kubernetes clusters-- [minikube](https://github.com/kubernetes/minikube).
+
+Given the existence of these excellent tools, there is no reason, at this time, for micro-kube development to continue.
+
+For anyone in need of a _local_, single-node Kubernetes cluster, [minikube](https://github.com/kubernetes/minikube)  is likely the best option, although Windows support is only experimental at this time.
+
+For anyone using Windows or wishing to create single-node Kubernetes clusters in the cloud, [kmachine](https://github.com/skippbox/kmachine) remains a tremendous option.
+
+We now return you to your regularly scheduled documentation...
+
 # micro-kube
+
+__Please note that this repository and documentation is for "classic" micro-kube.__
 
 **micro-kube** is the fastest way to start a fully-functional, single-node
 [Kubernetes](http://kubernetes.io/) cluster using [CoreOS](https://coreos.com/) on
 [Vagrant](https://www.vagrantup.com/).
 
-micro-kube attempts to differentiate itself from other similar projects by being maximally useful
-right out-of-the-box.  See the [roadmap](#roadmap) for further details.
 
 ## Getting started
 
@@ -38,7 +56,7 @@ vary with the speed of your internet connection.
 The Kubernetes API will be available at http://172.17.8.100:8080 and https://172.17.8.100:6443
 
 The Kubernetes UI (a dashboard application) will be available at
-http://kube-ui.kube-system.micro-kube.io
+http://kube-ui.kube-system.micro-kube.172.17.8.100.xip.io
 
 ## Installing kubectl
 
@@ -155,20 +173,15 @@ You can view logs for any pod in the `kube-system` namespace like so:
 $ kubectl logs <pod name> --namespace=kube-system
 ```
 
-## <a name="roadmap"></a>Known issues and roadmap
+## Limitations
 
 * Kubernetes services are exposed using virtual IPs that are meaningless outside of the Kubernetes
   cluster.  (In micro-kube's case, meaningless outside of the Vagrant VM).  In the case of
   services exposing port 80 for HTTP traffic, the micro-kube-router component (which uses Nginx)
-  dynamically reflects those services through virtual hosts on the VM's own port 80.  Currently,
-  services running on other ports or using other protocols are not reflected.  This is presently
-  micro-kube's most damning limitation.  We plan to address this in an upcoming release by
-  improving the micro-kube-router component to route traffic for all ports and protocols.
+  dynamically reflects those services through virtual hosts on the VM's own port 80, but
+  services running on other ports or using other protocols are not reflected.
 
-* Although micro-kube exposes both secure and insecure API endpoints, the kube-ui addon is
-  accessible _only_ an insecure port.
 
 ## Contributing
 
-Pull requests that make micro-kube more awesome are welcome!  The primary guideline for
-contribution is to keep things simple so micro-kube remains lightweight and easy-to-use.
+micro-kube is no longer under active development.
